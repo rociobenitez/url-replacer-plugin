@@ -20,7 +20,7 @@ Plugin de WordPress para **buscar y reemplazar URLs** en la base de datos, con m
 
 ## Instalación
 
-**Método 1**: Clonar el repositorio (para desarrolladores)
+### Método 1: Clonar el repositorio
 
 1. En tu servidor local o remoto, ve a la carpeta `wp-content/plugins/`.
 2. Ejecuta:
@@ -31,12 +31,21 @@ Plugin de WordPress para **buscar y reemplazar URLs** en la base de datos, con m
 3. Activa el plugin en tu panel de administración de WordPress.
 4. Accede al menú **URL Replacer** en el escritorio de WordPress.
 
-**Método 2:** Subir un archivo `.zip` (recomendado para sitios de producción)
+Buena pregunta, Rocío. Aquí tienes la forma más clara y técnica de **adaptar esa sección del README** para explicar el **Método 2: instalación mediante `.zip`**, teniendo en cuenta que el `.zip` estará disponible en la pestaña **"Releases"** del repositorio:
 
-1. Descarga la última versión en formato `.zip` desde la sección “Releases” de este repositorio o comprime manualmente la carpeta del plugin.
-2. En tu WordPress, ve a “Plugins > Añadir nuevo” y elige “Subir plugin”.
-3. Selecciona el `.zip` descargado, instálalo y actívalo.
-4. Accede al menú URL Replacer.
+### Método 2: Instalar mediante archivo `.zip`
+
+Este método es ideal para sitios en producción, si no deseas clonar el repositorio o no tienes acceso por FTP/SFTP.
+
+1. Descarga la última versión estable del plugin en formato `.zip` desde la sección [**Releases**](https://github.com/rociobenitez/url-replacer-plugin/releases) de este repositorio. También puedes comprimir manualmente la carpeta `url-replacer/`.
+2. En el panel de administración de tu WordPress, ve a: Plugins → Añadir nuevo → Subir plugin
+3. Selecciona el archivo `.zip` descargado.
+4. Haz clic en “Instalar ahora” y luego en “Activar plugin”.
+5. Accede al menú **URL Replacer** en el panel de WordPress para comenzar a usarlo.
+
+> [!NOTE]
+> Si no ves la sección "Releases", puedes acceder directamente a ella desde:  
+> `https://github.com/rociobenitez/url-replacer-plugin/releases`
 
 ## Uso
 
@@ -62,7 +71,7 @@ Plugin de WordPress para **buscar y reemplazar URLs** en la base de datos, con m
    - Desde **URL Replacer** → **Descargar Log** puedes obtener un archivo `.txt` con los reemplazos realizados recientemente.
 
 <p align="center" style="margin-top: 24px;">
-  <img src="url-replacer/screenshot-1.png" width="600" alt="Modo Prueba" />
+  <img src="url-replacer/screenshot-1.png" width="700" alt="Modo Prueba" />
 </p>
 
 ## Ejemplo de CSV
