@@ -1,0 +1,23 @@
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos temporales / backup
+*.log
+*.bak
+*.tmp
+*.swp
+
+# Archivos de sistema de IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Archivos de compilación
+node_modules/
+dist/
+build/
+
+# Archivos del sistema de WordPress 
+wp-config.php
+.htaccess
