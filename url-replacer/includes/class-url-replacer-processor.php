@@ -28,10 +28,12 @@ class URL_Replacer_Processor {
             $tableName = $wpdb->prefix . $t['table'];
             if (!$this->tableExists($tableName)) {
                 $tableResults[] = [
-                    'label'   => $t['label'],
-                    'table'   => $tableName,
-                    'rows'    => [],
-                    'db_error'=> null
+                    'label'       => $t['label'],
+                    'table'       => $tableName,
+                    'rows'        => [],
+                    'table_count' => 0,
+                    'row_count'   => 0,
+                    'db_error'    => null
                 ];
                 continue;
             }
@@ -47,32 +49,38 @@ class URL_Replacer_Processor {
 
             if ($dbError) {
                 $tableResults[] = [
-                    'label' => $t['label'],
-                    'table' => $tableName,
-                    'rows'  => [],
-                    'db_error' => $dbError
+                    'label'       => $t['label'],
+                    'table'       => $tableName,
+                    'rows'        => [],
+                    'table_count' => 0,
+                    'row_count'   => 0,
+                    'db_error'    => $dbError
                 ];
                 continue;
             }
 
             if (!$rows) {
                 $tableResults[] = [
-                    'label' => $t['label'],
-                    'table' => $tableName,
-                    'rows'  => [],
-                    'db_error' => null
+                    'label'       => $t['label'],
+                    'table'       => $tableName,
+                    'rows'        => [],
+                    'table_count' => 0,
+                    'row_count'   => 0,
+                    'db_error'    => null
                 ];
                 continue;
             }
 
             // Procesar cada fila y calcular cuántas veces aparece la URL
             $processedRows = [];
+            $tableCount = 0;
             foreach ($rows as $r) {
                 $idVal = $r->{$t['id_column']};
                 $text  = $r->{$t['value_column']};
                 // Recuento de ocurrencias en la cadena
                 $occurrences = $this->countSubstrings($text, $url);
                 $totalCount += $occurrences;
+                $tableCount += $occurrences;
 
                 // Fragmento resaltado
                 $fragment = $this->highlightFragment($text, $url);
@@ -83,10 +91,12 @@ class URL_Replacer_Processor {
             }
 
             $tableResults[] = [
-                'label'   => $t['label'],
-                'table'   => $tableName,
-                'rows'    => $processedRows,
-                'db_error'=> null
+                'label'       => $t['label'],
+                'table'       => $tableName,
+                'rows'        => $processedRows,
+                'table_count' => $tableCount,
+                'row_count'   => count($processedRows),
+                'db_error'    => null
             ];
         }
 

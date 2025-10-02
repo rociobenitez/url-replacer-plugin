@@ -91,9 +91,9 @@ class URL_Replacer_Admin {
         echo '</div>';
 
         // Información sobre qué tablas se revisan
-        echo '<div style="background: #f9f9f9; padding: 15px; border-left: 4px solid #0073aa; margin: 20px 0;">';
-        echo '<h4 style="margin-top: 0;">Tablas que se analizan:</h4>';
-        echo '<ul style="margin-bottom: 0;">';
+        echo '<div class="url-replacer-tables-info">';
+        echo '<h4>Tablas que se analizan:</h4>';
+        echo '<ul>';
         echo '<li><strong>Contenido de Posts:</strong> El contenido principal de entradas y páginas</li>';
         echo '<li><strong>Meta de Posts:</strong> Campos personalizados y metadatos</li>';
         echo '<li><strong>Meta de Términos:</strong> Metadatos de categorías y etiquetas</li>';
@@ -110,27 +110,59 @@ class URL_Replacer_Admin {
             // $results será un array con info de cada tabla, filas encontradas, recuento total, etc.
 
             if (empty($results['tables'])) {
+                echo '<div class="url-replacer-total-matches">';
+                echo '<h3>Resultado de la búsqueda</h3>';
+                echo '<div class="url-replacer-total-number zero">0</div>';
                 echo '<p>No se encontraron coincidencias en ninguna tabla.</p>';
+                echo '</div>';
             } else {
-                echo '<p>Coincidencias totales: <strong>' . esc_html($results['total_count']) . '</strong></p>';
+                // Resumen destacado de coincidencias totales
+                echo '<div class="url-replacer-total-matches">';
+                echo '<h3>Coincidencias encontradas</h3>';
+                $totalClass = ($results['total_count'] > 0) ? '' : 'zero';
+                echo '<div class="url-replacer-total-number ' . $totalClass . '">' . esc_html($results['total_count']) . '</div>';
+                
+                // Resumen por tabla
+                echo '<div class="url-replacer-table-summary">';
+                echo '<h4>Desglose por tabla:</h4>';
+                echo '<div class="summary-stats">';
+                foreach ($results['tables'] as $tableResult) {
+                    if ($tableResult['db_error']) continue;
+                    
+                    $countClass = ($tableResult['table_count'] > 0) ? 'has-matches' : 'no-matches';
+                    echo '<div class="stat-item">';
+                    echo '<span>' . esc_html($tableResult['label']) . ':</span>';
+                    echo '<span class="stat-number ' . $countClass . '">' . esc_html($tableResult['table_count']) . '</span>';
+                    echo '<span>(' . esc_html($tableResult['row_count']) . ' registros)</span>';
+                    echo '</div>';
+                }
+                echo '</div></div>';
+                echo '</div>';
+                
                 // Mostrar la información tabla por tabla
                 foreach ($results['tables'] as $tableResult) {
-                    echo '<h3>' . esc_html($tableResult['label']) . ' (' . esc_html($tableResult['table']) . ')</h3>';
+                    // Título con información de coincidencias
+                    $titleExtra = ($tableResult['table_count'] > 0) 
+                        ? ' - ' . $tableResult['table_count'] . ' coincidencias en ' . $tableResult['row_count'] . ' registros'
+                        : ' - Sin coincidencias';
+                    
+                    echo '<h3>' . esc_html($tableResult['label']) . ' (' . esc_html($tableResult['table']) . ')' . $titleExtra . '</h3>';
+                    
                     if ($tableResult['db_error']) {
-                        echo '<p style="color:red;">Error de base de datos: ' . esc_html($tableResult['db_error']) . '</p>';
+                        echo '<p class="url-replacer-db-error">Error de base de datos: ' . esc_html($tableResult['db_error']) . '</p>';
                         continue;
                     }
                     if (empty($tableResult['rows'])) {
-                        echo '<p>No se encontraron coincidencias.</p>';
+                        echo '<p>No se encontraron coincidencias en esta tabla.</p>';
                         continue;
                     }
                     // Mostrar las filas
-                    echo '<table class="widefat striped">';
+                    echo '<table class="widefat striped url-replacer-results-table">';
                     echo '<thead><tr><th>ID</th><th>Fragmento</th></tr></thead><tbody>';
                     foreach ($tableResult['rows'] as $row) {
                         $id = $row['id'];
                         $fragment = $row['fragment'];
-                        echo '<tr><td>' . esc_html($id) . '</td><td>' . $fragment . '</td></tr>';
+                        echo '<tr><td>' . esc_html($id) . '</td><td><div class="url-replacer-fragment">' . $fragment . '</div></td></tr>';
                     }
                     echo '</tbody></table>';
                 }
@@ -164,8 +196,8 @@ class URL_Replacer_Admin {
         echo '<strong>Se recomienda hacer una copia de seguridad antes de proceder.</strong></p>';
         echo '</div>';
 
-        echo '<div style="background: #fff3cd; padding: 15px; border: 1px solid #ffeaa7; margin: 20px 0;">';
-        echo '<h4 style="margin-top: 0;">Consejos:</h4>';
+        echo '<div class="url-replacer-warning-box">';
+        echo '<h4>Consejos:</h4>';
         echo '<ul>';
         echo '<li>Usa primero el <strong>Modo Prueba</strong> para verificar qué se va a cambiar</li>';
         echo '<li>El reemplazo respeta la serialización de WordPress automáticamente</li>';
@@ -189,12 +221,13 @@ class URL_Replacer_Admin {
             } else {
                 $changesCount = count($log);
                 echo '<div class="notice notice-success"><p><strong>¡Éxito!</strong> Se realizaron ' . $changesCount . ' cambios en la base de datos.</p></div>';
-                echo '<details><summary>Ver detalles de los cambios</summary>';
-                echo '<ul>';
+                echo '<details class="url-replacer-details"><summary>Ver detalles de los cambios</summary>';
+                echo '<div class="url-replacer-details-content">';
+                echo '<ul class="url-replacer-log-list">';
                 foreach ($log as $line) {
                     echo '<li>' . esc_html($line) . '</li>';
                 }
-                echo '</ul></details>';
+                echo '</ul></div></details>';
                 echo '<p><em>Log guardado en wp-content/uploads/url-replacer-log.txt</em></p>';
             }
 
@@ -215,7 +248,7 @@ class URL_Replacer_Admin {
             echo '</td></tr>';
             echo '</table>';
             
-            echo '<div class="notice notice-info inline" style="margin-top: 20px;">';
+            echo '<div class="notice notice-info inline url-replacer-notice-spaced">';
             echo '<p><strong>Antes de continuar:</strong> ¿Has hecho una copia de seguridad de tu base de datos?</p>';
             echo '</div>';
             submit_button('Reemplazar', 'primary', 'replace_submit');
@@ -238,8 +271,8 @@ class URL_Replacer_Admin {
         echo '</div>';
 
         // Instrucciones más claras
-        echo '<div style="background: #f0f8ff; padding: 20px; border: 1px solid #0073aa; margin: 20px 0;">';
-        echo '<h3 style="margin-top: 0;">Formato del archivo CSV</h3>';
+        echo '<div class="url-replacer-info-box">';
+        echo '<h3>Formato del archivo CSV</h3>';
         echo '<p><strong>Requisitos importantes:</strong></p>';
         echo '<ul>';
         echo '<li>Archivo con extensión <code>.csv</code></li>';
@@ -250,7 +283,7 @@ class URL_Replacer_Admin {
         echo '</ul>';
         
         echo '<h4>Ejemplo correcto:</h4>';
-        echo '<pre style="background: white; padding: 10px; border: 1px solid #ddd;">';
+        echo '<pre class="url-replacer-code-example">';
         echo 'https://sitio-viejo.com/imagen1.jpg;https://sitio-nuevo.com/imagen1.jpg' . PHP_EOL;
         echo 'https://sitio-viejo.com/imagen2.png;https://sitio-nuevo.com/imagen2.png' . PHP_EOL;
         echo 'https://sitio-viejo.com/documento.pdf;https://sitio-nuevo.com/documento.pdf';
@@ -258,8 +291,8 @@ class URL_Replacer_Admin {
         echo '</div>';
 
         // Proceso paso a paso
-        echo '<div style="background: #f9f9f9; padding: 15px; border-left: 4px solid #00a32a; margin: 20px 0;">';
-        echo '<h4 style="margin-top: 0;">Proceso en 3 pasos:</h4>';
+        echo '<div class="url-replacer-steps-box">';
+        echo '<h4>Proceso en 3 pasos:</h4>';
         echo '<ol>';
         echo '<li><strong>Subir:</strong> Sube tu archivo CSV</li>';
         echo '<li><strong>Revisar:</strong> Ve la vista previa de todos los cambios</li>';
@@ -351,21 +384,21 @@ class URL_Replacer_Admin {
                 set_transient('url_replacer_csv_preview', $previewData, HOUR_IN_SECONDS);
     
                 // Mostrar tabla de vista previa
-                echo '<h2 style="margin-top:2em;">Vista previa</h2>';
+                echo '<h2 class="url-replacer-preview-header">Vista previa</h2>';
 
                 $totalUrls = count($previewData);
                 echo '<p>Se han detectado <strong>' . $totalUrls . '</strong> URLs en el archivo CSV.</p>';
                 echo '<p>Total de coincidencias encontradas en la base de datos: <strong>' . esc_html($totalAll) . '</strong></p>';
                 
                 // Tabla detallada
-                echo '<table class="widefat striped">';
+                echo '<table class="widefat striped url-replacer-preview-table">';
                 echo '<thead><tr><th>URL Antigua</th><th>URL Nueva</th><th>Coincidencias</th></tr></thead><tbody>';
                 foreach ($previewData as $item) {
-                    $statusColor = $item['count'] > 0 ? '#d63638' : '#00a32a';
                     echo '<tr>';
                     echo '<td><code>' . esc_html($item['old']) . '</code></td>';
                     echo '<td><code>' . esc_html($item['new']) . '</code></td>';
-                    echo '<td style="color: ' . $statusColor . '; font-weight: bold;">' . $item['count'] . '</td>';
+                    $countClass = ($item['count'] > 0) ? 'url-replacer-count-found' : 'url-replacer-count-none';
+                    echo '<td class="url-replacer-count-cell ' . $countClass . '">' . $item['count'] . '</td>';
                     echo '</tr>';
                 }
                 echo '</tbody></table>';
