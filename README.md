@@ -111,7 +111,7 @@ Este es el método estándar y más seguro para entornos de producción.
    - Acción: Descarga el archivo `url-replacer-log.txt` para auditoría y seguimiento.
 
 <p align="center" style="margin-top: 24px;">
-  <img src="url-replacer/screenshot-1.png" width="700" alt="Modo Prueba" />
+  <img src="url-replacer/screenshot-1.png" width="100%" alt="Modo Prueba" style="border-radius: 6px;" />
 </p>
 
 ### Configuración del CSV

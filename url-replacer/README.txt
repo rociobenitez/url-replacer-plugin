@@ -65,9 +65,9 @@ https://sitio-viejo.com/pagina1;https://sitio-nuevo.com/pagina1
 ## Changelog
 
 ### 1.0.1
-* [Añadido] Procesamiento de URLs con caracteres especiales en el modo CSV.
 * [Añadido] Archivo admin.css para estilos personalizados.
 * [Añadido] Tabla resumen de resultados.
+* [Añadido] Procesamiento de URLs con caracteres especiales en el modo CSV.
 * [Mejora] Experiencia de usuario y visual del panel de administración.
 
 ### 1.0
