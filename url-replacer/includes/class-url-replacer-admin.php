@@ -84,7 +84,21 @@ class URL_Replacer_Admin {
     public function renderTestPage() {
         echo '<div class="wrap">';
         echo '<h1>Modo Prueba - URL Replacer</h1>';
-        echo '<p>Busca las apariciones de una URL en varias tablas sin modificar la base de datos.</p>';
+        echo '<div class="notice notice-info inline">';
+        echo '<p><strong>¿Qué hace esta herramienta?</strong></p>';
+        echo '<p>Busca todas las apariciones de una URL específica en tu base de datos de WordPress <strong>sin realizar cambios</strong>. ';
+        echo 'Podrás ver exactamente dónde aparece la URL y cuántas veces antes de decidir si quieres reemplazarla.</p>';
+        echo '</div>';
+
+        // Información sobre qué tablas se revisan
+        echo '<div style="background: #f9f9f9; padding: 15px; border-left: 4px solid #0073aa; margin: 20px 0;">';
+        echo '<h4 style="margin-top: 0;">Tablas que se analizan:</h4>';
+        echo '<ul style="margin-bottom: 0;">';
+        echo '<li><strong>Contenido de Posts:</strong> El contenido principal de entradas y páginas</li>';
+        echo '<li><strong>Meta de Posts:</strong> Campos personalizados y metadatos</li>';
+        echo '<li><strong>Meta de Términos:</strong> Metadatos de categorías y etiquetas</li>';
+        echo '</ul>';
+        echo '</div>';
 
         // Formulario
         if (isset($_POST['test_submit']) && !empty($_POST['test_url'])) {
@@ -125,6 +139,7 @@ class URL_Replacer_Admin {
         } else {
             // Form
             echo '<form method="post">';
+            wp_nonce_field('url_replacer_test_action', 'url_replacer_test_nonce');
             echo '<table class="form-table">';
             echo '<tr><th><label for="test_url">URL a buscar</label></th>';
             echo '<td><input type="text" name="test_url" id="test_url" class="regular-text" required></td></tr>';
@@ -142,7 +157,21 @@ class URL_Replacer_Admin {
     public function renderReplacePage() {
         echo '<div class="wrap">';
         echo '<h1>Reemplazar URLs</h1>';
-        echo '<p>Busca la URL antigua y la reemplaza por la nueva en la base de datos (respetando serialización).</p>';
+
+        echo '<div class="notice notice-warning inline">';
+        echo '<p><strong>Atención: Esta acción modifica tu base de datos</strong></p>';
+        echo '<p>Esta herramienta buscará la URL antigua y la reemplazará por la nueva en toda tu base de datos. ';
+        echo '<strong>Se recomienda hacer una copia de seguridad antes de proceder.</strong></p>';
+        echo '</div>';
+
+        echo '<div style="background: #fff3cd; padding: 15px; border: 1px solid #ffeaa7; margin: 20px 0;">';
+        echo '<h4 style="margin-top: 0;">Consejos:</h4>';
+        echo '<ul>';
+        echo '<li>Usa primero el <strong>Modo Prueba</strong> para verificar qué se va a cambiar</li>';
+        echo '<li>El reemplazo respeta la serialización de WordPress automáticamente</li>';
+        echo '<li>Se generará un log detallado de todos los cambios realizados</li>';
+        echo '</ul>';
+        echo '</div>';
 
         if (isset($_POST['replace_submit']) && !empty($_POST['old_url']) && !empty($_POST['new_url'])) {
             $old = sanitize_text_field($_POST['old_url']);
@@ -154,27 +183,41 @@ class URL_Replacer_Admin {
             // Guardar log en archivo
             $this->logger->writeLog($log);
 
-            echo '<h2>Resultado</h2>';
+            echo '<h2>Resultado del reemplazo</h2>';
             if (empty($log)) {
-                echo '<p>No se realizaron cambios.</p>';
+                echo '<div class="notice notice-info"><p>No se encontraron coincidencias para reemplazar.</p></div>';
             } else {
+                $changesCount = count($log);
+                echo '<div class="notice notice-success"><p><strong>¡Éxito!</strong> Se realizaron ' . $changesCount . ' cambios en la base de datos.</p></div>';
+                echo '<details><summary>Ver detalles de los cambios</summary>';
                 echo '<ul>';
                 foreach ($log as $line) {
                     echo '<li>' . esc_html($line) . '</li>';
                 }
-                echo '</ul>';
-                echo '<p>Se ha guardado un log en wp-content/uploads/url-replacer-log.txt</p>';
+                echo '</ul></details>';
+                echo '<p><em>Log guardado en wp-content/uploads/url-replacer-log.txt</em></p>';
             }
 
         } else {
             // Form
             echo '<form method="post">';
+            wp_nonce_field('url_replacer_replace_action', 'url_replacer_replace_nonce');
             echo '<table class="form-table">';
             echo '<tr><th><label for="old_url">URL antigua</label></th>';
-            echo '<td><input type="text" name="old_url" class="regular-text" required></td></tr>';
+            echo '<td>';
+            echo '<input type="text" name="old_url" class="regular-text" required placeholder="https://sitio-viejo.com/imagen.jpg">';
+            echo '<p class="description">La URL que quieres reemplazar (debe coincidir exactamente)</p>';
+            echo '</td></tr>';
             echo '<tr><th><label for="new_url">URL nueva</label></th>';
-            echo '<td><input type="text" name="new_url" class="regular-text" required></td></tr>';
+            echo '<td>';
+            echo '<input type="text" name="new_url" class="regular-text" required placeholder="https://sitio-nuevo.com/imagen.jpg">';
+            echo '<p class="description">La nueva URL que reemplazará a la anterior</p>';
+            echo '</td></tr>';
             echo '</table>';
+            
+            echo '<div class="notice notice-info inline" style="margin-top: 20px;">';
+            echo '<p><strong>Antes de continuar:</strong> ¿Has hecho una copia de seguridad de tu base de datos?</p>';
+            echo '</div>';
             submit_button('Reemplazar', 'primary', 'replace_submit');
             echo '</form>';
         }
@@ -187,15 +230,42 @@ class URL_Replacer_Admin {
      */
     public function renderCSVPage() {
         echo '<div class="wrap">';
-        echo '<h1>Subir CSV de URLs</h1>';
-        echo '<p>Sube un archivo CSV que <strong>no incluya</strong> fila de encabezados y contenga exactamente <strong>dos columnas</strong> por línea: <strong>URL antigua</strong> y <strong>URL nueva</strong></p>';
-        echo '<p>';
-        echo 'A modo de ejemplo, el CSV podría tener dos líneas como estas:<br>';
-        echo '<code style="display:inline-block;margin: 8px 0;">https://oldurl1.com;https://newurl1.com<br>';
-        echo 'https://oldurl2.com;https://newurl2.com</code>';
-        echo '</p>';
+        echo '<h1>Reemplazo Masivo con CSV</h1>';
+    
+        echo '<div class="notice notice-info inline">';
+        echo '<p><strong>¿Cuándo usar esta opción?</strong></p>';
+        echo '<p>Perfecto cuando necesitas reemplazar múltiples URLs de una sola vez, como al migrar un sitio completo o cambiar un CDN.</p>';
+        echo '</div>';
 
-        echo '<p>Tras subir el archivo, podrás revisar cuántas coincidencias se encuentran y, si todo está correcto, aplicar el cambio masivo.</p>';
+        // Instrucciones más claras
+        echo '<div style="background: #f0f8ff; padding: 20px; border: 1px solid #0073aa; margin: 20px 0;">';
+        echo '<h3 style="margin-top: 0;">Formato del archivo CSV</h3>';
+        echo '<p><strong>Requisitos importantes:</strong></p>';
+        echo '<ul>';
+        echo '<li>Archivo con extensión <code>.csv</code></li>';
+        echo '<li><strong>Sin fila de encabezados</strong> (no incluyas títulos como "URL Antigua, URL Nueva")</li>';
+        echo '<li>Exactamente <strong>2 columnas por fila</strong> separadas por punto y coma (<code>;</code>)</li>';
+        echo '<li>Primera columna: URL antigua</li>';
+        echo '<li>Segunda columna: URL nueva</li>';
+        echo '</ul>';
+        
+        echo '<h4>Ejemplo correcto:</h4>';
+        echo '<pre style="background: white; padding: 10px; border: 1px solid #ddd;">';
+        echo 'https://sitio-viejo.com/imagen1.jpg;https://sitio-nuevo.com/imagen1.jpg' . PHP_EOL;
+        echo 'https://sitio-viejo.com/imagen2.png;https://sitio-nuevo.com/imagen2.png' . PHP_EOL;
+        echo 'https://sitio-viejo.com/documento.pdf;https://sitio-nuevo.com/documento.pdf';
+        echo '</pre>';
+        echo '</div>';
+
+        // Proceso paso a paso
+        echo '<div style="background: #f9f9f9; padding: 15px; border-left: 4px solid #00a32a; margin: 20px 0;">';
+        echo '<h4 style="margin-top: 0;">Proceso en 3 pasos:</h4>';
+        echo '<ol>';
+        echo '<li><strong>Subir:</strong> Sube tu archivo CSV</li>';
+        echo '<li><strong>Revisar:</strong> Ve la vista previa de todos los cambios</li>';
+        echo '<li><strong>Aplicar:</strong> Confirma y ejecuta el reemplazo masivo</li>';
+        echo '</ol>';
+        echo '</div>';
 
         // Enlace o botón para descargar archivo de ejemplo
         $sample_csv_url = plugins_url('assets/sample.csv', URL_REPLACER_MAIN_FILE);
@@ -243,6 +313,11 @@ class URL_Replacer_Admin {
                     $this->renderCSVUploadForm();
                     echo '</div>';
                     return;
+                } elseif (isset($pairs['error'])) {
+                    echo '<div class="notice notice-error"><p>' . esc_html($pairs['error']) . '</p></div>';
+                    $this->renderCSVUploadForm();
+                    echo '</div>';
+                    return;
                 }
     
                 // Calcular coincidencias de cada par
@@ -281,7 +356,24 @@ class URL_Replacer_Admin {
                 $totalUrls = count($previewData);
                 echo '<p>Se han detectado <strong>' . $totalUrls . '</strong> URLs en el archivo CSV.</p>';
                 echo '<p>Total de coincidencias encontradas en la base de datos: <strong>' . esc_html($totalAll) . '</strong></p>';
-    
+                
+                // Tabla detallada
+                echo '<table class="widefat striped">';
+                echo '<thead><tr><th>URL Antigua</th><th>URL Nueva</th><th>Coincidencias</th></tr></thead><tbody>';
+                foreach ($previewData as $item) {
+                    $statusColor = $item['count'] > 0 ? '#d63638' : '#00a32a';
+                    echo '<tr>';
+                    echo '<td><code>' . esc_html($item['old']) . '</code></td>';
+                    echo '<td><code>' . esc_html($item['new']) . '</code></td>';
+                    echo '<td style="color: ' . $statusColor . '; font-weight: bold;">' . $item['count'] . '</td>';
+                    echo '</tr>';
+                }
+                echo '</tbody></table>';
+
+                if ($totalAll > 0) {
+                    echo '<div class="notice notice-warning inline"><p><strong>Atención:</strong> Se realizarán cambios en ' . $totalAll . ' ubicaciones de la base de datos.</p></div>';
+                }
+
                 // Botón para aplicar
                 echo '<form method="post">';
                 echo '<input type="hidden" name="csv_step" value="apply">';

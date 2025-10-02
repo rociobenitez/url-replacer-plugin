@@ -166,17 +166,17 @@ class URL_Replacer_Processor {
         }
 
         $start = max(0, $pos - 30);
-        // 30 antes + longitud de la búsqueda + 30 extra
         $length = strlen($search) + 60;
         $fragment = substr($text, $start, $length);
 
-        // Escapamos el fragmento para evitar inyección
-        // Luego insertamos <mark> sin escapar
+        // Escapar y resaltar
         $escaped_fragment = esc_html($fragment);
         $escaped_search = esc_html($search);
-
-        // Realizamos el reemplazo IGNORANDO mayús/minús. Para ello, transformamos ambos a minús.
         $highlighted = str_ireplace($escaped_search, '<mark>' . $escaped_search . '</mark>', $escaped_fragment);
+
+        // Contexto
+        $prefix = ($start > 0) ? '...' : '';
+        $suffix = ($start + $length < strlen($text)) ? '...' : '';
 
         // Permitimos la etiqueta <mark> en la salida
         // Si quieres permitir también <a>, <p>, etc. agrégalos al array
@@ -184,12 +184,7 @@ class URL_Replacer_Processor {
             'mark' => []
         ];
 
-        // Mostramos también un poco de contexto
-        $pre_context = esc_html(substr($text, 0, $start)) . '...';
-        $post_context = '...';
-
-        // Retornamos con kses para permitir <mark>
-        return wp_kses($pre_context . $highlighted . $post_context, $allowed_tags);
+        return wp_kses($prefix . $highlighted . $suffix, $allowed_tags);
     }
 
     /**
